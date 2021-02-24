@@ -40,7 +40,7 @@ devs here--since they have cared enough to provide a CSV timetable, they will, h
 structure unchanged.
 
 ## Pending work
-This is not yet complete. For a list of pending work see [issues](issues).
+This is not yet complete. For a list of pending work see [issues](https://github.com/palak-jha/CU-Timetable/issues).
 
 ## Obligatory meme
 <p align="center"><img src="images/meme.jpg"></p>
