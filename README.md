@@ -10,7 +10,7 @@ name from the table at the bottom of the pic. Of course, one quickly learns to r
 but it still is inconvenient.
 
 ## The Solution
-Basically, using this script, you can convert the original timetable to this:
+Basically, using this script, you can convert the original timetable to a Google Sheet:
 <p align="center"><img src="images/gs-after.png"></p>
 
 Then you can take a screenshot of and crop it to finally get this:
