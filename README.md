@@ -20,8 +20,9 @@ Which is more accessible than the original--which is good. Sweet!
 
 ## How to run?
 Before running you'll need the following:
- 1. The latest CSV timetable file from the "My Time Table" panel on CUIMS.
- 2. Python 3.
+ 1. Python 3.
+ 2. The latest CSV timetable file from the "My Time Table" panel on CUIMS, as shown below:
+    <p><img src="images/csv-download.png"></p>
  3. A Google Sheets API credentials file (`credentials.json`) which you can download from here: https://developers.google.com/sheets/api/quickstart/python
  4. Some libraries which you can install by executing the following on your command line:
     ```
