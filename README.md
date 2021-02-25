@@ -28,6 +28,7 @@ Before running you'll need the following:
     ```
     pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
     ```
+ 5. A `coursenames.json` file containing a map of course IDs to the course names you want to be shown on the timetable.
 
 After you have all that, just run the script. Your browser window will open and you'll be asked to:
  1. Login to your Google Account (if you aren't logged in already).
