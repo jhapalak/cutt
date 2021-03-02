@@ -36,8 +36,8 @@ After you have all that, just run the script. Your browser window will open and 
 
 After a successful run, you should have a new spreadsheet in your Google Drive. That's your timetable!
 
-## Won't work if...
-If the structure of the CSV file on CUIMS changes, this program won't work. I am counting on CUIMS'
+## May not work if...
+If the structure of the CSV file on CUIMS changes, this program may not work. I am counting on CUIMS'
 devs here--since they have cared enough to provide a CSV timetable, they will, hopefully, keep the
 structure unchanged.
 
