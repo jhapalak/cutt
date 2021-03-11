@@ -246,15 +246,30 @@ def default_title():
     return 'CU-Timetable ({})'.format(time.ctime())
 
 
-def cu_timetable(timetable_filepath, coursenames_filepath, title=None):
-    raw_tt, _ = raw_data(timetable_filepath)
+def make_default_coursenames_file(cnames, filepath):
+    table = dict(cnames)
+    table[BREAK_PERIOD] = '---'
+    with open(filepath, 'w') as f:
+        json.dump(table, f, indent='\t')
+
+
+DEFAULT_COURSENAMES_TABLE_FILEPATH = 'coursenames.json'
+
+def cu_timetable(timetable_filepath, title=None):
+    raw_tt, raw_cnames_table = raw_data(timetable_filepath)
+
+    if not path.exists(DEFAULT_COURSENAMES_TABLE_FILEPATH):
+        make_default_coursenames_file(
+            raw_cnames_table,
+            DEFAULT_COURSENAMES_TABLE_FILEPATH)
+
     tt = transformed_timetable(
         raw_tt,
-        coursenames_table(coursenames_filepath)
-    )
+        coursenames_table(DEFAULT_COURSENAMES_TABLE_FILEPATH))
+
     title = title or default_title()
     make_spreadsheet(service(), title, tt)
 
 
 if __name__ == '__main__':
-    cu_timetable('tt.csv', 'coursenames.json')
+    cu_timetable('tt.csv')
