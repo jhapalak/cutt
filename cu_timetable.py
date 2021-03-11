@@ -19,10 +19,6 @@ def raw_timetable(filepath):
     with open(filepath, 'r') as f:
         schedule = list(csv.reader(f))
     separator_index = schedule.index(SEPARATOR)
-    # Don't include in the result:
-    #   - the first row, since it's a header.
-    #   - the separator or anything after it, since they are not part of
-    #     the timetable proper.
     return schedule[1:separator_index]
 
 
