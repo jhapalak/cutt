@@ -14,12 +14,14 @@ from google.auth.transport.requests import Request
 # empty list after the file-obj is passed through csv.reader().
 SEPARATOR = []
 
-def raw_timetable(filepath):
-    """Return the raw timetable from the CSV file."""
+def raw_data(filepath):
+    """Return the raw timetable and coursenames table from the CSV."""
     with open(filepath, 'r') as f:
         schedule = list(csv.reader(f))
     separator_index = schedule.index(SEPARATOR)
-    return schedule[1:separator_index]
+    tt = schedule[1:separator_index]
+    cnames = schedule[separator_index+2:-1]
+    return tt, cnames
 
 
 def coursenames_table(filepath):
@@ -243,8 +245,9 @@ def default_title():
 
 
 def cu_timetable(timetable_filepath, coursenames_filepath, title=None):
+    raw_tt, _ = raw_data(timetable_filepath)
     tt = transformed_timetable(
-        raw_timetable(timetable_filepath),
+        raw_tt,
         coursenames_table(coursenames_filepath)
     )
     title = title or default_title()
