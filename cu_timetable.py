@@ -19,6 +19,8 @@ def raw_data(filepath):
     with open(filepath, 'r') as f:
         schedule = list(csv.reader(f))
     separator_index = schedule.index(SEPARATOR)
+    # The slice bounds are chosen as such since that's how the data
+    # is arranged in the CSV file.
     tt = schedule[1:separator_index]
     cnames = schedule[separator_index+2:-1]
     return tt, cnames
