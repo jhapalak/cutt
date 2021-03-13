@@ -108,18 +108,17 @@ def service():
 
 
 def get_formatting_request(timetable):
-    endRowIndex = len(timetable)
-    endColumnIndex = len(timetable[0])
+    end_row_index = len(timetable)
+    end_column_index = len(timetable[0])
 
-    #XXX Taking up too much space. Move this to a JSON file?
     return {
         'requests': [
             # Font face
             {
                 'repeatCell': {
                     'range': {
-                        'endRowIndex': endRowIndex,
-                        'endColumnIndex': endColumnIndex,
+                        'endRowIndex': end_row_index,
+                        'endColumnIndex': end_column_index,
                     },
                     'cell': {
                         'userEnteredFormat': {
@@ -139,7 +138,7 @@ def get_formatting_request(timetable):
                 'repeatCell': {
                     'range': {
                         'endRowIndex': 1,
-                        'endColumnIndex': endColumnIndex,
+                        'endColumnIndex': end_column_index,
                     },
                     'cell': {
                         'userEnteredFormat': {
@@ -164,8 +163,8 @@ def get_formatting_request(timetable):
             {
                 'repeatCell': {
                     'range': {
-                        'startRowIndex': 1,  # Don't include the header
-                        'endRowIndex': endRowIndex,
+                        'startRowIndex': 1,  # Don't format the header
+                        'endRowIndex': end_row_index,
                         'endColumnIndex': 1,
                     },
                     'cell': {
@@ -192,8 +191,8 @@ def get_formatting_request(timetable):
                 'addBanding': {
                     'bandedRange': {
                         'range': {
-                            'endRowIndex': endRowIndex,
-                            'endColumnIndex': endColumnIndex,
+                            'endRowIndex': end_row_index,
+                            'endColumnIndex': end_column_index,
                         },
                         'rowProperties': {
                             'headerColor': {
