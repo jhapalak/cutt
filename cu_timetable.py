@@ -222,7 +222,6 @@ def get_formatting_request(timetable):
     }
 
 
-#XXX Split this into three?
 def make_spreadsheet(service, title, timetable):
     # Create spreadsheet
     response = service.spreadsheets().create(
@@ -235,9 +234,12 @@ def make_spreadsheet(service, title, timetable):
         body={'values': timetable},
         valueInputOption='RAW').execute()
 
-    # Format sheet to a presentable form
+    return ssid
+
+
+def format_spreadsheet(ssid, fmt_request):
     service.spreadsheets().batchUpdate(
-        spreadsheetId=ssid, body=get_formatting_request(timetable)
+        spreadsheetId=ssid, body=fmt_request
     ).execute()
 
 
@@ -268,7 +270,8 @@ def cu_timetable(timetable_filepath, title=None):
         coursenames_table(DEFAULT_COURSENAMES_TABLE_FILEPATH))
 
     title = title or default_title()
-    make_spreadsheet(service(), title, tt)
+    ssid = make_spreadsheet(service(), title, tt)
+    format_spreadsheet(ssid, get_formatting_request(tt))
 
 
 if __name__ == '__main__':
