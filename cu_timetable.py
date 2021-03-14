@@ -9,6 +9,13 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
 
+should_log = True
+
+def log(msg):
+    if should_log:
+        print(msg)
+
+
 # An empty line separates the actual timetable from the subject info in
 # the CSV file obtained from CUIMS. That empty line shows up as an
 # empty list after the file-obj is passed through csv.reader().
@@ -16,6 +23,8 @@ SEPARATOR = []
 
 def raw_data(filepath):
     """Return the raw timetable and coursenames table from the CSV."""
+    log(f'Reading data from {filepath}')
+
     with open(filepath, 'r') as f:
         schedule = list(csv.reader(f))
     separator_index = schedule.index(SEPARATOR)
@@ -37,6 +46,7 @@ BREAK_PERIOD = 'BREAK'
 def transformed_timetable(raw_tt, coursenames_table):
     """Correct the raw timetable's structure into the more familiar
     Weekday*Duration grid form. Also, format its contents."""
+    log('Processing data...')
 
     def fmt_duration(d):
         # Convert the duration, as in the raw timetable, to the form
@@ -91,6 +101,8 @@ CREDENTIALS_FILEPATH = 'credentials.json'
 
 # Taken from https://developers.google.com/sheets/api/quickstart/python
 def service():
+    log('Doing some network stuff...')
+
     creds = None
     if path.exists(TOKEN_FILEPATH):
         with open(TOKEN_FILEPATH, 'rb') as token:
@@ -222,6 +234,8 @@ def get_formatting_request(timetable):
 
 
 def make_spreadsheet(service, title, timetable):
+    log(f'Creating spreadsheet...')
+
     # Create spreadsheet
     response = service.spreadsheets().create(
         body={'properties': {'title': title}}).execute()
@@ -237,6 +251,8 @@ def make_spreadsheet(service, title, timetable):
 
 
 def format_spreadsheet(service, ssid, fmt_request):
+    log('Formatting spreadsheet...')
+
     service.spreadsheets().batchUpdate(
         spreadsheetId=ssid, body=fmt_request
     ).execute()
@@ -248,6 +264,8 @@ def default_title():
 
 
 def make_default_coursenames_file(cnames, filepath):
+    log('Creating coursenames file...')
+
     table = dict(cnames)
     table[BREAK_PERIOD] = '---'
     with open(filepath, 'w') as f:
@@ -256,7 +274,17 @@ def make_default_coursenames_file(cnames, filepath):
 
 DEFAULT_COURSENAMES_TABLE_FILEPATH = 'coursenames.json'
 
-def cu_timetable(timetable_filepath, title=None, should_format=True):
+def cu_timetable(
+    timetable_filepath,
+    title=None,
+    should_format=True,
+    verbose=True,
+):
+    global should_log
+    should_log = verbose
+
+    log('Starting...')
+
     raw_tt, raw_cnames_table = raw_data(timetable_filepath)
 
     if not path.exists(DEFAULT_COURSENAMES_TABLE_FILEPATH):
@@ -274,6 +302,8 @@ def cu_timetable(timetable_filepath, title=None, should_format=True):
 
     if should_format:
         format_spreadsheet(serv, ssid, get_formatting_request(tt))
+
+    log(f'Timetable created and saved to your Google Drive as "{title}".')
 
 
 if __name__ == '__main__':
