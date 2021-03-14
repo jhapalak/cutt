@@ -236,7 +236,7 @@ def make_spreadsheet(service, title, timetable):
     return ssid
 
 
-def format_spreadsheet(ssid, fmt_request):
+def format_spreadsheet(service, ssid, fmt_request):
     service.spreadsheets().batchUpdate(
         spreadsheetId=ssid, body=fmt_request
     ).execute()
@@ -269,10 +269,11 @@ def cu_timetable(timetable_filepath, title=None, should_format=True):
         coursenames_table(DEFAULT_COURSENAMES_TABLE_FILEPATH))
 
     title = title or default_title()
-    ssid = make_spreadsheet(service(), title, tt)
+    serv = service()
+    ssid = make_spreadsheet(serv, title, tt)
 
     if should_format:
-        format_spreadsheet(ssid, get_formatting_request(tt))
+        format_spreadsheet(serv, ssid, get_formatting_request(tt))
 
 
 if __name__ == '__main__':
