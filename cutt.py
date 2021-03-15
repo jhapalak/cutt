@@ -128,7 +128,7 @@ def get_formatting_request(timetable):
 
     return {
         'requests': [
-            # Font face
+            # Basic formatting common to all cells
             {
                 'repeatCell': {
                     'range': {
@@ -138,6 +138,8 @@ def get_formatting_request(timetable):
                     'cell': {
                         'userEnteredFormat': {
                             'horizontalAlignment': 'CENTER',
+                            'verticalAlignment': 'MIDDLE',
+                            'wrapStrategy': 'WRAP',
                             'textFormat': {
                                 'fontSize': 10,
                                 'bold': False,
@@ -145,7 +147,7 @@ def get_formatting_request(timetable):
                             },
                         },
                     },
-                    'fields': 'userEnteredFormat(horizontalAlignment,textFormat)'
+                    'fields': 'userEnteredFormat(horizontalAlignment,verticalAlignment,textFormat,wrapStrategy)'
                 },
             },
             # Header formatting
