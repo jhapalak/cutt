@@ -276,6 +276,7 @@ DEFAULT_COURSENAMES_TABLE_FILEPATH = 'coursenames.json'
 
 def cu_timetable(
     timetable_filepath,
+    coursenames_filepath=None,
     title=None,
     should_format=True,
     verbose=True,
@@ -287,15 +288,16 @@ def cu_timetable(
 
     raw_tt, raw_cnames_table = raw_data(timetable_filepath)
 
-    if not path.exists(DEFAULT_COURSENAMES_TABLE_FILEPATH):
-        make_default_coursenames_file(
-            raw_cnames_table,
-            DEFAULT_COURSENAMES_TABLE_FILEPATH)
+    if coursenames_filepath:
+        cnames = coursenames_table(coursenames_filepath)
+    else:
+        if not path.exists(DEFAULT_COURSENAMES_TABLE_FILEPATH):
+            make_default_coursenames_file(
+                raw_cnames_table,
+                DEFAULT_COURSENAMES_TABLE_FILEPATH)
+        cnames = coursenames_table(DEFAULT_COURSENAMES_TABLE_FILEPATH)
 
-    tt = transformed_timetable(
-        raw_tt,
-        coursenames_table(DEFAULT_COURSENAMES_TABLE_FILEPATH))
-
+    tt = transformed_timetable(raw_tt, cnames)
     title = title or default_title()
     serv = service()
     ssid = make_spreadsheet(serv, title, tt)
