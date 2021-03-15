@@ -264,7 +264,7 @@ def default_title():
 
 
 def make_default_coursenames_file(cnames, filepath):
-    log('Creating coursenames file...')
+    log('Creating default coursenames file...')
 
     table = dict(cnames)
     table[BREAK_PERIOD] = '---'
@@ -305,7 +305,7 @@ def cu_timetable(
     if should_format:
         format_spreadsheet(serv, ssid, get_formatting_request(tt))
 
-    log(f'Timetable created and saved to your Google Drive as "{title}".')
+    log(f'Timetable saved to your Google Drive as "{title}".')
 
 
 if __name__ == '__main__':
