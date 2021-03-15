@@ -2,6 +2,7 @@
 # here: https://developers.google.com/sheets/api/quickstart/python
 
 import csv, json, pickle, time
+import argparse
 from os import path
 
 from googleapiclient.discovery import build
@@ -308,5 +309,39 @@ def cu_timetable(
     log(f'Timetable saved to your Google Drive as "{title}".')
 
 
+def main(args=None):
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawTextHelpFormatter,
+        description="")
+
+    parser.add_argument(
+        "timetable",
+        help="")
+
+    parser.add_argument(
+        "-c", "--coursenames",
+        help="")
+    parser.add_argument(
+        "-t", "--title",
+        help="")
+    parser.add_argument(
+        "-p", "--plain",
+        action="store_true",
+        help="")
+    parser.add_argument(
+        "-q", "--quiet",
+        action="store_true",
+        help="")
+
+    ns = parser.parse_args(args)
+    cu_timetable(
+        ns.timetable,
+        ns.coursenames,
+        ns.title,
+        not ns.plain,
+        not ns.quiet,
+    )
+
+
 if __name__ == '__main__':
-    cu_timetable('tt.csv')
+    main()
