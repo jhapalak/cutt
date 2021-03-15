@@ -3,6 +3,7 @@
 
 import csv, json, pickle, time
 import argparse
+import textwrap
 from os import path
 
 from googleapiclient.discovery import build
@@ -310,28 +311,45 @@ def cu_timetable(
 
 
 def main(args=None):
+    d = textwrap.dedent
+
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter,
-        description="")
+        description=d("""\
+            Program to prettify and make readable the overwhelmingly info-dense
+            timetables provided on CUIMS (university's website)."""))
 
     parser.add_argument(
         "timetable",
-        help="")
+        help=d("""\
+            Path to CSV file containing the timetable. You can
+            download it from CUIMS (university's website)."""))
 
     parser.add_argument(
         "-c", "--coursenames",
-        help="")
+        help=d("""\
+            Path to JSON file containing the CourseId->CourseName
+            mapping. If not specified, the default "{}"
+            is assumed. If the default doesn't exist, it is generated
+            based on the information in the CSV file <timetable>.
+            You may edit the default file if you want to change the
+            display text for courses. You must not edit the course
+            codes.""").format(DEFAULT_COURSENAMES_TABLE_FILEPATH))
     parser.add_argument(
         "-t", "--title",
-        help="")
+        help=d("""\
+            Title for the google sheet containing the timetable.
+            If not specified, a timestamped default title is used."""))
     parser.add_argument(
         "-p", "--plain",
         action="store_true",
-        help="")
+        help="Write only plain text to google sheet--don't prettify/format.")
     parser.add_argument(
         "-q", "--quiet",
         action="store_true",
-        help="")
+        help=d("""\
+            Don't report progress to output stream. This doesn't suppress
+            errors."""))
 
     ns = parser.parse_args(args)
     cu_timetable(
