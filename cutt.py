@@ -1,7 +1,8 @@
 # A client config file is required for this to work. You can get it
 # here: https://developers.google.com/sheets/api/quickstart/python
 
-import csv, json, pickle, time
+import csv, json, pickle
+import time
 import argparse
 import textwrap
 from os import path
@@ -260,9 +261,12 @@ def format_spreadsheet(service, ssid, fmt_request):
     ).execute()
 
 
+DEFAULT_TITLE_FORMAT = 'CU-Timetable-{timestamp}'
+
 def default_title():
     """Return a timestamped title."""
-    return 'CU-Timetable ({})'.format(time.ctime())
+    timestamp = time.strftime('%d%b%Y-%I%M%p')
+    return DEFAULT_TITLE_FORMAT.format(timestamp=timestamp)
 
 
 def make_default_coursenames_file(cnames, filepath):
@@ -339,7 +343,8 @@ def main(args=None):
         "-t", "--title",
         help=d("""\
             Title for the google sheet containing the timetable.
-            If not specified, a timestamped default title is used."""))
+            If not specified, a timestamped default title is used.
+            Default title format: "{}".""".format(DEFAULT_TITLE_FORMAT)))
     parser.add_argument(
         "-p", "--plain",
         action="store_true",
