@@ -1,10 +1,15 @@
-# A client config file is required for this to work. You can get it
-# here: https://developers.google.com/sheets/api/quickstart/python
+__all__ = [
+    'timetable',
+    'cmd_gsheet',
+    'cutt',
+]
 
-import csv, json, pickle
+import json
+import csv
+import pickle
 import time
 import argparse
-import textwrap
+from textwrap import dedent as d
 from os import path
 
 from googleapiclient.discovery import build
@@ -12,84 +17,73 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
 
-should_log = True
-
-def log(msg):
-    if should_log:
-        print(msg)
-
-
-# An empty line separates the actual timetable from the subject info in
-# the CSV file obtained from CUIMS. That empty line shows up as an
-# empty list after the file-obj is passed through csv.reader().
-SEPARATOR = []
-
-def raw_data(filepath):
-    """Return the raw timetable and coursenames table from the CSV."""
-    log(f'Reading data from {filepath}')
-
-    with open(filepath, 'r') as f:
-        schedule = list(csv.reader(f))
-    separator_index = schedule.index(SEPARATOR)
-    # The slice bounds are chosen as such since that's how the data
-    # is arranged in the CSV file.
-    tt = schedule[1:separator_index]
-    cnames = schedule[separator_index+2:-1]
-    return tt, cnames
+def timetable(timetable_file, courseinfo_file=None):
+    raw_data = list(csv.reader(timetable_file))
+    courseinfo = None
+    if courseinfo_file:
+        courseinfo = json.load(courseinfo_file)
+    return _timetable_actual(raw_data, courseinfo)
 
 
-def coursenames_table(filepath):
-    with open(filepath, 'r') as f:
-        return json.load(f)
+def _timetable_actual(raw_data, courseinfo=None):
+    raw_tt, raw_courseinfo = _raw_data_split(raw_data)
+    courseinfo = courseinfo or _courseinfo_processed(raw_courseinfo)
+    tt = _timetable_processed(raw_tt, courseinfo)
+    return tt
 
 
-TOP_LEFT_CELL_TEXT = 'Timings'
+def _courseinfo_processed(raw_courseinfo):
+    return dict(raw_courseinfo)
+
+
+def _timetable_from_files(timetable_filepath, courseinfo_filepath):
+    with open(timetable_filepath, 'r') as tf, \
+         open(courseinfo_filepath, 'r') as cf:
+        return timetable(tf, cf)
+
+
+def _raw_data_split(raw_data):
+    separator_index = raw_data.index([])
+    raw_timetable = raw_data[1:separator_index]
+    raw_courseinfo = raw_data[separator_index+2:-1]
+    return raw_timetable, raw_courseinfo
+
+
 BREAK_PERIOD = 'BREAK'
 
-def transformed_timetable(raw_tt, coursenames_table):
-    """Correct the raw timetable's structure into the more familiar
-    Weekday*Duration grid form. Also, format its contents."""
-    log('Processing data...')
+def _timetable_processed(raw_tt, courseinfo):
 
     def fmt_duration(d):
-        # Convert the duration, as in the raw timetable, to the form
-        # 'HH:MM-HH:MM'.
         d = d.strip()
         start, _, end, _ = d.split()
         def fmt_time(t):
-            h, m = t.split(':')
-            return f'{h.zfill(2)}:{m.zfill(2)}'
+            hrs, mins = t.split(':')
+            return f'{hrs.zfill(2)}:{mins.zfill(2)}'
         return f'{fmt_time(start)}-{fmt_time(end)}'
 
-    def fmt_weekday(wd):
-        return wd.strip().title()
-    
-    def fmt_courseinfo(ci):
-        code = ci[:ci.find(':')] if ci else BREAK_PERIOD
-        return coursenames_table[code]
+    def fmt_weekday(w):
+        return w.strip().title()
 
-    weekdays = list(map(fmt_weekday, get_working_weekdays(raw_tt)))
+    def fmt_courseinfo(c):
+        code = c[:c.find(':')] if c else BREAK_PERIOD
+        return courseinfo[code]
 
-    tt = {}
-    for duration, _, courseinfo in raw_tt:
+    d = {}
+    for duration, _, course in raw_tt:
         duration = fmt_duration(duration)
-        courseinfo = fmt_courseinfo(courseinfo)
-        row = tt.setdefault(duration, [])
-        row.append(courseinfo)
+        course = fmt_courseinfo(course)
+        row = d.setdefault(duration, [])
+        row.append(course)
 
-    grid = [[TOP_LEFT_CELL_TEXT] + weekdays]
-    for k, v in tt.items():
-        grid.append([k]+v)
+    weekdays = list(map(fmt_weekday, _working_weekdays(raw_tt)))
+    tt = [['Timings'] + weekdays]
+    for k, v in d.items():
+        tt.append([k]+v)
 
-    return grid
+    return tt
 
 
-# Reality is unpredictable. That Saturdays will be off is not guaranteed.
-# There may be other such exceptions too. So, actually look at the data
-# and list the working weekdays.
-def get_working_weekdays(raw_tt):
-    """Return a list of strings representing the working weekdays as
-    obtained from the actual raw timetable."""
+def _working_weekdays(raw_tt):
     weekdays = []
     for _, wd, _ in raw_tt:
         if wd in weekdays:
@@ -98,56 +92,117 @@ def get_working_weekdays(raw_tt):
     return weekdays
 
 
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-TOKEN_FILEPATH = 'token.pickle'
-CREDENTIALS_FILEPATH = 'credentials.json'
+def _google_spreadsheet(token_filepath,
+                        credentials_filepath,
+                        timetable,
+                        title,
+                        should_prettify,
+                        ):
+    s = _google_service(token_filepath, credentials_filepath)
+    spreadsheet_id = _google_spreadsheet_new(s, title)
+    _google_spreadsheet_fill(s, spreadsheet_id, timetable)
+    if should_prettify:
+        _google_spreadsheet_prettify(s, spreadsheet_id, timetable)
+    return spreadsheet_id
+
+
+_GOOGLE_API_SCOPES = [
+    'https://www.googleapis.com/auth/spreadsheets',
+]
 
 # Taken from https://developers.google.com/sheets/api/quickstart/python
-def service():
-    log('Doing some network stuff...')
-
-    creds = None
-    if path.exists(TOKEN_FILEPATH):
-        with open(TOKEN_FILEPATH, 'rb') as token:
-            creds = pickle.load(token)
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
+def _google_service(token_filepath, credentials_filepath):
+    token = None
+    if path.exists(token_filepath):
+        with open(token_filepath, 'rb') as f:
+            token = pickle.load(f)
+    if not token or not token.valid:
+        if token and token.expired and token.refresh_token:
+            token.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                CREDENTIALS_FILEPATH, SCOPES)
-            creds = flow.run_local_server(port=0)
-        with open(TOKEN_FILEPATH, 'wb') as token:
-            pickle.dump(creds, token)
-    return build('sheets', 'v4', credentials=creds)
+                credentials_filepath,
+                _GOOGLE_API_SCOPES,
+            )
+            token = flow.run_local_server(port=0)
+        with open(token_filepath, 'wb') as f:
+            pickle.dump(token, f)
+    return build('sheets', 'v4', credentials=token)
 
 
-def get_formatting_request(timetable):
+def _google_spreadsheet_new(service, title):
+    request = {'properties': {'title': title}}
+    response = service.spreadsheets().create(
+        body=request,
+    ).execute()
+    return response['spreadsheetId']
+
+
+def _google_spreadsheet_fill(service, spreadsheet_id, timetable):
+    request = {'values': timetable}
+    service.spreadsheets().values().update(
+        spreadsheetId=spreadsheet_id,
+        range='A1',
+        body=request,
+        valueInputOption='RAW',
+    ).execute()
+
+
+def _google_spreadsheet_prettify(service, spreadsheet_id, timetable):
+    requests = _google_spreadsheet_prettifying_requests(timetable)
+    service.spreadsheets().batchUpdate(
+        spreadsheetId=spreadsheet_id,
+        body=requests,
+    ).execute()
+
+
+def _google_color(r, g, b, a):
+    return {'red': r, 'green': g, 'blue': b, 'alpha': a}
+
+_GOOGLE_COLOR_WHITE = _google_color(1, 1, 1, 1)
+_GOOGLE_COLOR_BLUE = _google_color(0.447, 0.478, 0.993, 1)
+_GOOGLE_COLOR_LIGHT_BLUE = _google_color(0.894, 0.925, 0.984, 1)
+
+
+def _google_spreadsheet_prettifying_requests(timetable):
     end_row_index = len(timetable)
     end_column_index = len(timetable[0])
+    full_range = {
+        'endRowIndex': end_row_index,
+        'endColumnIndex': end_column_index,
+    }
 
     return {
         'requests': [
-            # Basic formatting common to all cells
+            # Base formatting; common to all cells
             {
                 'repeatCell': {
-                    'range': {
-                        'endRowIndex': end_row_index,
-                        'endColumnIndex': end_column_index,
-                    },
+                    'range': full_range,
                     'cell': {
                         'userEnteredFormat': {
                             'horizontalAlignment': 'CENTER',
                             'verticalAlignment': 'MIDDLE',
                             'wrapStrategy': 'WRAP',
-                            'textFormat': {
-                                'fontSize': 10,
-                                'bold': False,
-                                'fontFamily': 'Merriweather',
-                            },
                         },
                     },
-                    'fields': 'userEnteredFormat(horizontalAlignment,verticalAlignment,textFormat,wrapStrategy)'
+                    'fields': '''userEnteredFormat(\
+                                    horizontalAlignment,\
+                                    verticalAlignment,\
+                                    wrapStrategy,\
+                                    )''',
+                },
+            },
+            # Alternating row colours
+            {
+                'addBanding': {
+                    'bandedRange': {
+                        'range': full_range,
+                        'rowProperties': {
+                            'headerColor': _GOOGLE_COLOR_BLUE,
+                            'firstBandColor': _GOOGLE_COLOR_LIGHT_BLUE,
+                            'secondBandColor': _GOOGLE_COLOR_WHITE,
+                        },
+                    },
                 },
             },
             # Header formatting
@@ -159,214 +214,140 @@ def get_formatting_request(timetable):
                     },
                     'cell': {
                         'userEnteredFormat': {
-                            'horizontalAlignment': 'CENTER',
                             'textFormat': {
-                                'foregroundColor': {
-                                    'red': 1,
-                                    'green': 1,
-                                    'blue': 1,
-                                    'alpha': 1,
-                                },
-                                'fontSize': 10,
+                                'foregroundColor': _GOOGLE_COLOR_WHITE,
                                 'bold': True,
-                                'fontFamily': 'Merriweather',
                             },
                         },
                     },
-                    'fields': 'userEnteredFormat(horizontalAlignment,textFormat)'
+                    'fields': '''userEnteredFormat.textFormat(\
+                                    foregroundColor,\
+                                    bold)''',
                 },
             },
-            # First column formatting
+            # Timings column formatting
             {
                 'repeatCell': {
                     'range': {
-                        'startRowIndex': 1,  # Don't format the header
+                        'startRowIndex': 1,  # Don't touch the header
                         'endRowIndex': end_row_index,
                         'endColumnIndex': 1,
                     },
                     'cell': {
                         'userEnteredFormat': {
-                            'horizontalAlignment': 'CENTER',
                             'textFormat': {
-                                'foregroundColor': {
-                                    'red': 0,
-                                    'green': 0,
-                                    'blue': 0,
-                                    'alpha': 1,
-                                },
-                                'fontSize': 10,
                                 'bold': True,
-                                'fontFamily': 'Merriweather',
                             },
                         },
                     },
-                    'fields': 'userEnteredFormat(horizontalAlignment,textFormat)'
-                },
-            },
-            # Alternating row colours
-            {
-                'addBanding': {
-                    'bandedRange': {
-                        'range': {
-                            'endRowIndex': end_row_index,
-                            'endColumnIndex': end_column_index,
-                        },
-                        'rowProperties': {
-                            'headerColor': {
-                                'red': 0.447,
-                                'green': 0.478,
-                                'blue': 0.993,
-                                'alpha': 1,
-                            },
-                            'firstBandColor': {
-                                'red': 0.894,
-                                'green': 0.925,
-                                'blue': 0.984,
-                                'alpha': 1,
-                            },
-                            'secondBandColor': {
-                                'red': 1,
-                                'green': 1,
-                                'blue': 1,
-                                'alpha': 1,
-                            },
-                        },
-                    },
+                    'fields': 'userEnteredFormat.textFormat.bold',
                 },
             },
         ]
     }
 
 
-def make_spreadsheet(service, title, timetable):
-    log(f'Creating spreadsheet...')
+_DEFAULT_TITLE_FORMAT = 'cutt-{timestamp}'
 
-    # Create spreadsheet
-    response = service.spreadsheets().create(
-        body={'properties': {'title': title}}).execute()
-    ssid = response['spreadsheetId']
-
-    # Write data to it
-    service.spreadsheets().values().update(
-        spreadsheetId=ssid, range='A1',
-        body={'values': timetable},
-        valueInputOption='RAW').execute()
-
-    return ssid
-
-
-def format_spreadsheet(service, ssid, fmt_request):
-    log('Formatting spreadsheet...')
-
-    service.spreadsheets().batchUpdate(
-        spreadsheetId=ssid, body=fmt_request
-    ).execute()
-
-
-DEFAULT_TITLE_FORMAT = 'CU-Timetable-{timestamp}'
-
-def default_title():
-    """Return a timestamped title."""
+def _default_title(fmt=_DEFAULT_TITLE_FORMAT):
     timestamp = time.strftime('%d%b%Y-%I%M%p')
-    return DEFAULT_TITLE_FORMAT.format(timestamp=timestamp)
+    return fmt.format(timestamp=timestamp)
 
 
-def make_default_coursenames_file(cnames, filepath):
-    log('Creating default coursenames file...')
+_DEFAULT_FILEPATH_COURSEINFO = 'courseinfo.json'
+_DEFAULT_FILEPATH_TOKEN = 'token.pickle'
+_DEFAULT_FILEPATH_CREDENTIALS = 'credentials.json'
 
-    table = dict(cnames)
-    table[BREAK_PERIOD] = '---'
-    with open(filepath, 'w') as f:
-        json.dump(table, f, indent='\t')
-
-
-DEFAULT_COURSENAMES_TABLE_FILEPATH = 'coursenames.json'
-
-def cu_timetable(
-    timetable_filepath,
-    coursenames_filepath=None,
-    title=None,
-    should_format=True,
-    verbose=True,
-):
-    global should_log
-    should_log = verbose
-
-    log('Starting...')
-
-    raw_tt, raw_cnames_table = raw_data(timetable_filepath)
-
-    if coursenames_filepath:
-        cnames = coursenames_table(coursenames_filepath)
-    else:
-        if not path.exists(DEFAULT_COURSENAMES_TABLE_FILEPATH):
-            make_default_coursenames_file(
-                raw_cnames_table,
-                DEFAULT_COURSENAMES_TABLE_FILEPATH)
-        cnames = coursenames_table(DEFAULT_COURSENAMES_TABLE_FILEPATH)
-
-    tt = transformed_timetable(raw_tt, cnames)
-    title = title or default_title()
-    serv = service()
-    ssid = make_spreadsheet(serv, title, tt)
-
-    if should_format:
-        format_spreadsheet(serv, ssid, get_formatting_request(tt))
-
-    log(f'Timetable saved to your Google Drive as "{title}".')
+def cmd_gsheet(timetable_filepath,
+               courseinfo_filepath=None,
+               token_filepath=None,
+               credentials_filepath=None,
+               title=None,
+               plain=False,
+               ):
+    tt = _timetable_from_files(
+        timetable_filepath,
+        courseinfo_filepath or _DEFAULT_FILEPATH_COURSEINFO,
+    )
+    spreadsheet_id = _google_spreadsheet(
+        token_filepath or _DEFAULT_FILEPATH_TOKEN,
+        credentials_filepath or _DEFAULT_FILEPATH_CREDENTIALS,
+        tt,
+        title or _default_title(),
+        not plain,
+    )
+    return spreadsheet_id
 
 
-def main(args=None):
-    d = textwrap.dedent
+def _cmd_gsheet_add_parser(subparsers):
+    parser = subparsers.add_parser(
+        'gsheet',
+        formatter_class=argparse.RawTextHelpFormatter,
+        help='Create a Google Sheet')
 
+    parser.add_argument(
+        'timetable',
+        help=d('''\
+            Path to .csv file containing the timetable.
+            You can download it from CUIMS (university's website).'''))
+    parser.add_argument(
+        '-c', '--courseinfo',
+        help=d('''\
+            Path to .json file containing the courseinfo.
+            If not specified, "{}" is assumed.''')
+            .format(_DEFAULT_FILEPATH_COURSEINFO))
+    parser.add_argument(
+        '-t', '--title',
+        help=d('''\
+            Title for the Google Sheet.
+            If not specified, a timestamped default is used.
+            Default title format: "{}".''')
+            .format(_DEFAULT_TITLE_FORMAT))
+    parser.add_argument(
+        '-p', '--plain',
+        action='store_true',
+        help=d('''\
+            Write only plain text to Google Sheet.
+            Don't prettify.'''))
+    parser.add_argument(
+        '--token',
+        help=d('''\
+            Path to .pickle file containing the Google API token.
+            If not specified, "{}" is assumed.''')
+            .format(_DEFAULT_FILEPATH_TOKEN))
+    parser.add_argument(
+        '--credentials',
+        help=d('''\
+            Path to .json file containing the Google API credentials.
+            If not specified, "{}" is assumed.''')
+            .format(_DEFAULT_FILEPATH_CREDENTIALS))
+
+    def args_handler(args):
+        cmd_gsheet(
+            args.timetable,
+            args.courseinfo,
+            args.token,
+            args.credentials,
+            args.title,
+            args.plain,
+        )
+
+    parser.set_defaults(args_handler=args_handler)
+
+
+def cutt(args=None):
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter,
-        description=d("""\
-            Program to prettify and make readable the overwhelmingly info-dense
-            timetables provided on CUIMS (university's website)."""))
-
-    parser.add_argument(
-        "timetable",
-        help=d("""\
-            Path to CSV file containing the timetable. You can
-            download it from CUIMS (university's website)."""))
-
-    parser.add_argument(
-        "-c", "--coursenames",
-        help=d("""\
-            Path to JSON file containing the CourseId->CourseName
-            mapping. If not specified, the default "{}"
-            is assumed. If the default doesn't exist, it is generated
-            based on the information in the CSV file <timetable>.
-            You may edit the default file if you want to change the
-            display text for courses. You must not edit the course
-            codes.""").format(DEFAULT_COURSENAMES_TABLE_FILEPATH))
-    parser.add_argument(
-        "-t", "--title",
-        help=d("""\
-            Title for the google sheet containing the timetable.
-            If not specified, a timestamped default title is used.
-            Default title format: "{}".""".format(DEFAULT_TITLE_FORMAT)))
-    parser.add_argument(
-        "-p", "--plain",
-        action="store_true",
-        help="Write only plain text to google sheet--don't prettify/format.")
-    parser.add_argument(
-        "-q", "--quiet",
-        action="store_true",
-        help=d("""\
-            Don't report progress to output stream. This doesn't suppress
-            errors."""))
-
-    ns = parser.parse_args(args)
-    cu_timetable(
-        ns.timetable,
-        ns.coursenames,
-        ns.title,
-        not ns.plain,
-        not ns.quiet,
+        description='',
+        epilog=''
     )
+    subparsers = parser.add_subparsers(title='Sub-commands')
+
+    _cmd_gsheet_add_parser(subparsers)
+
+    namespace = parser.parse_args(args)
+    namespace.args_handler(namespace)
 
 
 if __name__ == '__main__':
-    main()
+    cutt()

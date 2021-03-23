@@ -1,3 +1,5 @@
+*This README is not accurate. It will be updated sometime later.*
+
 # CU-Timetable
 A simple script to prettify (and make readable) my university's overwhelmingly info-dense timetables.
 
