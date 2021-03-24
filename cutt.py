@@ -1,6 +1,7 @@
 __all__ = [
     'timetable',
     'cmd_gsheet',
+    'cmd_csv',
     'cutt',
 ]
 
@@ -248,15 +249,24 @@ def _google_spreadsheet_prettifying_requests(timetable):
 
 
 _DEFAULT_TITLE_FORMAT = 'cutt-{timestamp}'
+_DEFAULT_FILEPATH_COURSEINFO = 'courseinfo.json'
+_DEFAULT_FILEPATH_TOKEN = 'token.pickle'
+_DEFAULT_FILEPATH_CREDENTIALS = 'credentials.json'
+
 
 def _default_title(fmt=_DEFAULT_TITLE_FORMAT):
     timestamp = time.strftime('%d%b%Y-%I%M%p')
     return fmt.format(timestamp=timestamp)
 
 
-_DEFAULT_FILEPATH_COURSEINFO = 'courseinfo.json'
-_DEFAULT_FILEPATH_TOKEN = 'token.pickle'
-_DEFAULT_FILEPATH_CREDENTIALS = 'credentials.json'
+_COMMON_OPTION_HELP_TIMETABLE = d('''\
+    Path to .csv file containing the timetable.
+    You can download it from CUIMS (university's website).''')
+_COMMON_OPTION_HELP_COURSEINFO = d('''\
+    Path to .json file containing course information.
+    If not specified, "{}" is assumed.''')\
+    .format(_DEFAULT_FILEPATH_COURSEINFO)
+
 
 def cmd_gsheet(timetable_filepath,
                courseinfo_filepath=None,
@@ -287,15 +297,10 @@ def _cmd_gsheet_add_parser(subparsers):
 
     parser.add_argument(
         'timetable',
-        help=d('''\
-            Path to .csv file containing the timetable.
-            You can download it from CUIMS (university's website).'''))
+        help=_COMMON_OPTION_HELP_TIMETABLE)
     parser.add_argument(
         '-c', '--courseinfo',
-        help=d('''\
-            Path to .json file containing the courseinfo.
-            If not specified, "{}" is assumed.''')
-            .format(_DEFAULT_FILEPATH_COURSEINFO))
+        help=_COMMON_OPTION_HELP_COURSEINFO)
     parser.add_argument(
         '-t', '--title',
         help=d('''\
@@ -335,6 +340,52 @@ def _cmd_gsheet_add_parser(subparsers):
     parser.set_defaults(args_handler=args_handler)
 
 
+def cmd_csv(timetable_filepath,
+            courseinfo_filepath,
+            output_filepath,
+            ):
+    tt = _timetable_from_files(
+        timetable_filepath,
+        courseinfo_filepath or _DEFAULT_FILEPATH_COURSEINFO,
+    )
+    _create_csv_file(
+        output_filepath,
+        tt,
+    )
+
+
+def _create_csv_file(destination_filepath, rows):
+    with open(destination_filepath, 'w') as f:
+        w = csv.writer(f, lineterminator='\n')
+        w.writerows(rows)
+
+
+def _cmd_csv_add_parser(subparsers):
+    parser = subparsers.add_parser(
+        'csv',
+        formatter_class=argparse.RawTextHelpFormatter,
+        help='Output a CSV file')
+
+    parser.add_argument(
+        'timetable',
+        help=_COMMON_OPTION_HELP_TIMETABLE)
+    parser.add_argument(
+        'output',
+        help='Place output into this file.')
+    parser.add_argument(
+        '-c', '--courseinfo',
+        help=_COMMON_OPTION_HELP_COURSEINFO)
+
+    def args_handler(args):
+        cmd_csv(
+            args.timetable,
+            args.courseinfo,
+            args.output,
+        )
+
+    parser.set_defaults(args_handler=args_handler)
+
+
 def cutt(args=None):
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter,
@@ -344,6 +395,7 @@ def cutt(args=None):
     subparsers = parser.add_subparsers(title='Sub-commands')
 
     _cmd_gsheet_add_parser(subparsers)
+    _cmd_csv_add_parser(subparsers)
 
     namespace = parser.parse_args(args)
     namespace.args_handler(namespace)
