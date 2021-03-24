@@ -289,7 +289,7 @@ def cmd_gsheet(timetable_filepath,
     return spreadsheet_id
 
 
-def _cmd_gsheet_add_parser(subparsers):
+def _add_parser_cmd_gsheet(subparsers):
     parser = subparsers.add_parser(
         'gsheet',
         formatter_class=argparse.RawTextHelpFormatter,
@@ -360,7 +360,7 @@ def _create_csv_file(destination_filepath, rows):
         w.writerows(rows)
 
 
-def _cmd_csv_add_parser(subparsers):
+def _add_parser_cmd_csv(subparsers):
     parser = subparsers.add_parser(
         'csv',
         formatter_class=argparse.RawTextHelpFormatter,
@@ -394,8 +394,8 @@ def cutt(args=None):
     )
     subparsers = parser.add_subparsers(title='Sub-commands')
 
-    _cmd_gsheet_add_parser(subparsers)
-    _cmd_csv_add_parser(subparsers)
+    _add_parser_cmd_gsheet(subparsers)
+    _add_parser_cmd_csv(subparsers)
 
     namespace = parser.parse_args(args)
     namespace.args_handler(namespace)
