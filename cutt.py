@@ -1,5 +1,6 @@
 __all__ = [
     'timetable',
+    'cmd_courseinfo',
     'cmd_gsheet',
     'cmd_csv',
     'cutt',
@@ -50,7 +51,7 @@ def _raw_data_split(raw_data):
     return raw_timetable, raw_courseinfo
 
 
-BREAK_PERIOD = 'BREAK'
+_BREAK_PERIOD = ''
 
 def _timetable_processed(raw_tt, courseinfo):
 
@@ -66,7 +67,9 @@ def _timetable_processed(raw_tt, courseinfo):
         return w.strip().title()
 
     def fmt_courseinfo(c):
-        code = c[:c.find(':')] if c else BREAK_PERIOD
+        if c == _BREAK_PERIOD:
+            return '---'
+        code = c[:c.find(':')]
         return courseinfo[code]
 
     d = {}
@@ -348,13 +351,13 @@ def cmd_csv(timetable_filepath,
         timetable_filepath,
         courseinfo_filepath or _DEFAULT_FILEPATH_COURSEINFO,
     )
-    _create_csv_file(
+    _csv_create_file(
         output_filepath,
         tt,
     )
 
 
-def _create_csv_file(destination_filepath, rows):
+def _csv_create_file(destination_filepath, rows):
     with open(destination_filepath, 'w') as f:
         w = csv.writer(f, lineterminator='\n')
         w.writerows(rows)
@@ -386,6 +389,75 @@ def _add_parser_cmd_csv(subparsers):
     parser.set_defaults(args_handler=args_handler)
 
 
+def cmd_courseinfo(timetable_filepath,
+                   output_filepath=None,
+                   interactive=False,
+                   ):
+    courseinfo = _courseinfo_from_file(timetable_filepath)
+    if interactive:
+        _courseinfo_interactive_edit(courseinfo)
+    _courseinfo_create_file(
+        courseinfo,
+        output_filepath or _DEFAULT_FILEPATH_COURSEINFO,
+    )
+
+
+def _courseinfo_from_file(timetable_filepath):
+    with open(timetable_filepath, 'r') as f:
+        raw_data = list(csv.reader(f))
+    _, raw_courseinfo = _raw_data_split(raw_data)
+    return _courseinfo_processed(raw_courseinfo)
+
+
+def _courseinfo_interactive_edit(courseinfo):
+    print(d('''\
+        Enter alternative names for courses as prompted.
+        If no alternative name is given, the default name is kept.
+        Recommendation: Keep names shorter than 11 characters.
+        '''))
+    items_sorted_by_coursenames = sorted(courseinfo.items(),
+                                         key=lambda x: x[1])
+    for k, v in items_sorted_by_coursenames:
+        newname = input(f'Alternative name for "{v}" = ')
+        courseinfo[k] = newname
+    return courseinfo
+
+
+def _courseinfo_create_file(courseinfo, filepath):
+    with open(filepath, 'w') as f:
+        json.dump(courseinfo, f, indent='\t')
+
+
+def _add_parser_cmd_courseinfo(subparsers):
+    parser = subparsers.add_parser(
+        'courseinfo',
+        formatter_class=argparse.RawTextHelpFormatter,
+        help='Generate course-related information (required)')
+
+    parser.add_argument(
+        'timetable',
+        help=_COMMON_OPTION_HELP_TIMETABLE)
+    parser.add_argument(
+        '-o', '--output',
+        help=d('''\
+            Place output into this file.
+            If not specified, "{}" is assumed''')
+            .format(_DEFAULT_FILEPATH_COURSEINFO))
+    parser.add_argument(
+        '-i', '--interactive',
+        action='store_true',
+        help='Interactively create the file.')
+
+    def args_handler(args):
+        cmd_courseinfo(
+            args.timetable,
+            args.output,
+            args.interactive,
+        )
+
+    parser.set_defaults(args_handler=args_handler)
+
+
 def cutt(args=None):
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter,
@@ -394,6 +466,7 @@ def cutt(args=None):
     )
     subparsers = parser.add_subparsers(title='Sub-commands')
 
+    _add_parser_cmd_courseinfo(subparsers)
     _add_parser_cmd_gsheet(subparsers)
     _add_parser_cmd_csv(subparsers)
 
