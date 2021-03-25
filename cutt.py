@@ -467,8 +467,8 @@ def cutt(args=None):
     subparsers = parser.add_subparsers(title='Sub-commands')
 
     _add_parser_cmd_courseinfo(subparsers)
-    _add_parser_cmd_gsheet(subparsers)
     _add_parser_cmd_csv(subparsers)
+    _add_parser_cmd_gsheet(subparsers)
 
     namespace = parser.parse_args(args)
     namespace.args_handler(namespace)
