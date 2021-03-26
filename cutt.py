@@ -431,6 +431,7 @@ def _courseinfo_create_file(courseinfo, filepath):
 def _add_parser_cmd_courseinfo(subparsers):
     parser = subparsers.add_parser(
         'courseinfo',
+        aliases=['ci'],
         formatter_class=argparse.RawTextHelpFormatter,
         help='Generate course-related information (required)')
 
