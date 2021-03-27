@@ -344,8 +344,8 @@ def _add_parser_cmd_gsheet(subparsers):
 
 
 def cmd_csv(timetable_filepath,
-            courseinfo_filepath,
             output_filepath,
+            courseinfo_filepath=None,
             ):
     tt = _timetable_from_files(
         timetable_filepath,
@@ -382,8 +382,8 @@ def _add_parser_cmd_csv(subparsers):
     def args_handler(args):
         cmd_csv(
             args.timetable,
-            args.courseinfo,
             args.output,
+            args.courseinfo,
         )
 
     parser.set_defaults(args_handler=args_handler)
