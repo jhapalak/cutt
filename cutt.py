@@ -415,9 +415,8 @@ def _courseinfo_interactive_edit(courseinfo):
         If no alternative name is given, the default name is kept.
         Recommendation: Keep names shorter than 11 characters.
         '''))
-    items_sorted_by_coursenames = sorted(courseinfo.items(),
-                                         key=lambda x: x[1])
-    for k, v in items_sorted_by_coursenames:
+    items = sorted(courseinfo.items(), key=lambda x: x[1])
+    for k, v in items:
         newname = input(f'Alternative name for "{v}" = ')
         courseinfo[k] = newname
     return courseinfo
