@@ -30,7 +30,8 @@ to something like this sweet baby:
 
 Awww, look how readable... and pretty! Koochee koochee koo...
 
-Now, you can tell at a glance what the subjects for the day are. Yay!
+Now, you can tell at a glance which classes you have to attend for the day.
+Yay!
 
 Documentation
 =============
