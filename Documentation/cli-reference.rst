@@ -1,4 +1,0 @@
-=============
-CLI Reference
-=============
-PENDING

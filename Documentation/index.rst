@@ -7,6 +7,3 @@ Documentation for CU-Timetable (``cutt``)
 	:caption: Contents:
 
 	tutorial.rst
-	cli-reference.rst
-	api-reference.rst
-	howto-add-new-subcommand.rst
