@@ -251,11 +251,12 @@ def _google_spreadsheet_prettifying_requests(timetable):
     }
 
 
-_DEFAULT_TITLE_FORMAT = 'cutt-{timestamp}'
 _DEFAULT_FILEPATH_COURSEINFO = 'courseinfo.json'
 _DEFAULT_FILEPATH_TOKEN = 'token.pickle'
 _DEFAULT_FILEPATH_CREDENTIALS = 'credentials.json'
 
+
+_DEFAULT_TITLE_FORMAT = 'cutt-{timestamp}'
 
 def _default_title(fmt=_DEFAULT_TITLE_FORMAT):
     timestamp = time.strftime('%d%b%Y-%I%M%p')
