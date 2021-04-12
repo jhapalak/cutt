@@ -5,6 +5,10 @@ Tutorial
 This tutorial walks you through the process of creating your very first
 timetable using ``cutt``.
 
+.. note::
+	On some systems, simply typing ``cutt`` may not work. You may need
+	to use ``python -m cutt`` instead.
+
 Step 1: Download the CSV timetable
 ==================================
 Login to your account on the university's website. Then, navigate to the
