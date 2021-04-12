@@ -59,6 +59,10 @@ take a picture of it. Or you can do something else.
 
 Create a Google Sheet
 ---------------------
+.. note::
+	You'll need to get the credentials file and give the permissions
+	once only.
+
 For this, you'll need a Google Sheets API credentials file. Download it from
 `here <https://developers.google.com/sheets/api/quickstart/python>`_ and place
 it in your project directory with the name ``credentials.json``.
