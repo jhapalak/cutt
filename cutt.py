@@ -1,3 +1,9 @@
+#
+# cutt: Create readable timetables for Chandigarh University.
+# Copyright (C) 2021 Palak Kumar Jha <palakjha.dev@gmail.com>
+# Licensed under the GNU GPL version 3.
+#
+
 __all__ = [
     'timetable',
     'cmd_courseinfo',
