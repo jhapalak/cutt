@@ -20,10 +20,6 @@ import argparse
 from textwrap import dedent as d
 from os import path
 
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-
 
 def timetable(raw_data, courseinfo=None):
     raw_tt, raw_courseinfo = _raw_data_split(raw_data)
@@ -114,6 +110,10 @@ _GOOGLE_API_SCOPES = [
 
 # Taken from https://developers.google.com/sheets/api/quickstart/python
 def _google_service(token_filepath, credentials_filepath):
+    from googleapiclient.discovery import build
+    from google_auth_oauthlib.flow import InstalledAppFlow
+    from google.auth.transport.requests import Request
+
     token = None
     if path.exists(token_filepath):
         with open(token_filepath, 'rb') as f:
