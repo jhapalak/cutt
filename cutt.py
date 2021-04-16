@@ -460,8 +460,6 @@ def _add_parser_cmd_courseinfo(subparsers):
 def cutt(args=None):
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter,
-        description='',
-        epilog=''
     )
     subparsers = parser.add_subparsers(title='Sub-commands')
 
