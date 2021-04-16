@@ -63,6 +63,11 @@ For this, you'll need a Google Sheets API credentials file. Download it from
 `here <https://developers.google.com/sheets/api/quickstart/python>`_ and place
 it in your project directory with the name ``credentials.json``.
 
+Also, you'll need to install some libraries:
+::
+
+	pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
+
 Then, run the following command:
 ::
 
