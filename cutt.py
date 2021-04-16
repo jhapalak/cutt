@@ -25,15 +25,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
 
-def timetable(timetable_file, courseinfo_file=None):
-    raw_data = list(csv.reader(timetable_file))
-    courseinfo = None
-    if courseinfo_file:
-        courseinfo = json.load(courseinfo_file)
-    return _timetable_actual(raw_data, courseinfo)
-
-
-def _timetable_actual(raw_data, courseinfo=None):
+def timetable(raw_data, courseinfo=None):
     raw_tt, raw_courseinfo = _raw_data_split(raw_data)
     courseinfo = courseinfo or _courseinfo_processed(raw_courseinfo)
     tt = _timetable_processed(raw_tt, courseinfo)
@@ -47,7 +39,7 @@ def _courseinfo_processed(raw_courseinfo):
 def _timetable_from_files(timetable_filepath, courseinfo_filepath):
     with open(timetable_filepath, 'r') as tf, \
          open(courseinfo_filepath, 'r') as cf:
-        return timetable(tf, cf)
+        return timetable(list(csv.reader(tf)), json.load(cf))
 
 
 def _raw_data_split(raw_data):
