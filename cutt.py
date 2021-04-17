@@ -469,11 +469,9 @@ def cutt(args=None):
     _add_parser_cmd_gsheet(subparsers)
 
     namespace = parser.parse_args(args)
-    if hasattr(namespace, 'args_handler'):
-        namespace.args_handler(namespace)
-    else:
+    if not hasattr(namespace, 'args_handler'):
         parser.error('Must either pass an option or use a subcommand.')
-
+    namespace.args_handler(namespace)
 
 if __name__ == '__main__':
     cutt()
