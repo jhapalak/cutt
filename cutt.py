@@ -473,5 +473,6 @@ def cutt(args=None):
         parser.error('Must either pass an option or use a subcommand.')
     namespace.args_handler(namespace)
 
+
 if __name__ == '__main__':
     cutt()
