@@ -1,6 +1,6 @@
-I did some test runs and have put the input and output files here. Have a look
-inside the files too for a better understanding of what the program operates
-upon and what it outputs.
+Some sample data files here to give you an idea of the kind of data cutt
+operates upon and the kind it generates. You can also use these to try out the
+program.
 
 timetable.csv
 	This is the file downloaded from Chandigarh University's website (CUIMS).
@@ -17,7 +17,9 @@ generated-courseinfo-short-names.json
 	The coursenames in here can be manually edited.
 
 generated-csv.csv
-	This is the file that was output by `cutt csv` when it was given `timetable.csv`
-	and `generated-courseinfo-short-names.json` as input.
-	A similar csv but with longer names would've been generated if `generated-courseinfo-full-names.json`
-	was used instead.
+	This is the file that was output by `cutt csv` when it was given
+	`timetable.csv` and `generated-courseinfo-short-names.json` as input. A
+	similar csv but with longer names would've been generated if
+	`generated-courseinfo-full-names.json` was used instead.
+
+		Palak
