@@ -253,6 +253,7 @@ def _google_spreadsheet_prettifying_requests(timetable):
 _DEFAULT_FILEPATH_COURSEINFO = 'courseinfo.json'
 _DEFAULT_FILEPATH_TOKEN = 'token.pickle'
 _DEFAULT_FILEPATH_CREDENTIALS = 'credentials.json'
+_DEFAULT_FILEPATH_OUTPUT_CSV = 'a.csv'
 
 
 _DEFAULT_TITLE_FORMAT = 'cutt-{timestamp}'
@@ -344,7 +345,7 @@ def _add_parser_cmd_gsheet(subparsers):
 
 
 def cmd_csv(timetable_filepath,
-            output_filepath,
+            output_filepath=None,
             courseinfo_filepath=None,
             ):
     tt = _timetable_from_files(
@@ -352,7 +353,7 @@ def cmd_csv(timetable_filepath,
         courseinfo_filepath or _DEFAULT_FILEPATH_COURSEINFO,
     )
     _csv_create_file(
-        output_filepath,
+        output_filepath or _DEFAULT_FILEPATH_OUTPUT_CSV,
         tt,
     )
 
@@ -373,8 +374,11 @@ def _add_parser_cmd_csv(subparsers):
         'timetable',
         help=_COMMON_OPTION_HELP_TIMETABLE)
     parser.add_argument(
-        'output',
-        help='Place output into this file.')
+        '-o', '--output',
+        help=d('''\
+            Place output into this file.
+            If not specified "{}" is assumed.''')
+            .format(_DEFAULT_FILEPATH_OUTPUT_CSV))
     parser.add_argument(
         '-c', '--courseinfo',
         help=_COMMON_OPTION_HELP_COURSEINFO)
