@@ -4,7 +4,6 @@
 # Licensed under the GNU GPL version 3.
 #
 
-__version__ = '1.0.0'
 __all__ = [
     'timetable',
     'cmd_courseinfo',
