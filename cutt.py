@@ -271,6 +271,10 @@ _COMMON_OPTION_HELP_COURSEINFO = d('''\
     .format(_DEFAULT_FILEPATH_COURSEINFO)
 
 
+def _set_subparser_args_handler(subparser, handler):
+    subparser.set_defaults(args_handler=handler)
+
+
 def cmd_gsheet(timetable_filepath,
                courseinfo_filepath=None,
                token_filepath=None,
@@ -340,7 +344,7 @@ def _add_parser_cmd_gsheet(subparsers):
             args.plain,
         )
 
-    parser.set_defaults(args_handler=args_handler)
+    _set_subparser_args_handler(parser, args_handler)
 
 
 def cmd_csv(timetable_filepath,
@@ -389,7 +393,7 @@ def _add_parser_cmd_csv(subparsers):
             args.courseinfo,
         )
 
-    parser.set_defaults(args_handler=args_handler)
+    _set_subparser_args_handler(parser, args_handler)
 
 
 def cmd_courseinfo(timetable_filepath,
@@ -458,7 +462,7 @@ def _add_parser_cmd_courseinfo(subparsers):
             args.interactive,
         )
 
-    parser.set_defaults(args_handler=args_handler)
+    _set_subparser_args_handler(parser, args_handler)
 
 
 def cutt(args=None):
