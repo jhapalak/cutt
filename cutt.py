@@ -263,7 +263,7 @@ def _default_title(fmt=_DEFAULT_TITLE_FORMAT):
 
 
 _COMMON_OPTION_HELP_TIMETABLE = d('''\
-    Path to .csv file containing the timetable.
+    Path to .csv file containing the timetable (required).
     You can download it from CUIMS (university's website).''')
 _COMMON_OPTION_HELP_COURSEINFO = d('''\
     Path to .json file containing course information.
@@ -380,7 +380,7 @@ def _add_parser_cmd_csv(subparsers):
         '-o', '--output',
         help=d('''\
             Place output into this file.
-            If not specified "{}" is assumed.''')
+            If not specified, "{}" is assumed.''')
             .format(_DEFAULT_FILEPATH_OUTPUT_CSV))
     parser.add_argument(
         '-c', '--courseinfo',

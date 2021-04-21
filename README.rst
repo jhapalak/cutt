@@ -7,9 +7,7 @@ timetables for the students of Chandigarh University.
 
 The Problem: Timetable, why you hate me?
 ========================================
-The timetables provided on the university's website are hard to read. For
-example, here's a screenshot of a timetable as seen on the university's
-website:
+The timetables provided on the university's website are hard to read:
 
 .. image:: Documentation/images/before.png
 	:align: center
@@ -35,4 +33,5 @@ Yay!
 
 Documentation
 =============
-See ``Documentation/`` for usage instructions and more.
+There are a few other things you can do. See ``Documentation/`` for usage
+instructions and more.
