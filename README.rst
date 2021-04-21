@@ -1,9 +1,9 @@
 ========
 ``cutt``
 ========
-**C**handigarh **U**niversity **T**ime**T**able (``cutt``) is a command line
-script that generates readable timetables for the students of Chandigarh
-University.
+**C**\ handigarh **U**\ niversity **T**\ ime\ **T**\ able (``cutt``) is a
+command line script that generates readable timetables for the students of
+Chandigarh University.
 
 The Problem: Timetable, why you hate me?
 ========================================
