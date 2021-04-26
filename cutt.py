@@ -424,8 +424,9 @@ def _courseinfo_interactive_edit(courseinfo):
         '''))
     items = sorted(courseinfo.items(), key=lambda x: x[1])
     for k, v in items:
-        newname = input(f'Alternative name for "{v}" = ')
-        courseinfo[k] = newname
+        newname = input(f'Alternative name for "{v}" = ').strip()
+        if newname:
+            courseinfo[k] = newname
     return courseinfo
 
 
