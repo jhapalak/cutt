@@ -440,7 +440,7 @@ def _add_parser_cmd_courseinfo(subparsers):
         'courseinfo',
         aliases=['ci'],
         formatter_class=argparse.RawTextHelpFormatter,
-        help='Generate course-related information (required)')
+        help='Generate course-related information (required).')
 
     parser.add_argument(
         'timetable',
@@ -449,7 +449,7 @@ def _add_parser_cmd_courseinfo(subparsers):
         '-o', '--output',
         help=d('''\
             Place output into this file.
-            If not specified, "{}" is assumed''')
+            If not specified, "{}" is assumed.''')
             .format(_DEFAULT_FILEPATH_COURSEINFO))
     parser.add_argument(
         '-i', '--interactive',
@@ -470,7 +470,7 @@ def cutt(args=None):
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    subparsers = parser.add_subparsers(title='Sub-commands')
+    subparsers = parser.add_subparsers(title='Subcommands')
 
     _add_parser_cmd_courseinfo(subparsers)
     _add_parser_cmd_csv(subparsers)
