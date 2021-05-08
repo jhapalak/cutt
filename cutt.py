@@ -182,12 +182,18 @@ def _google_spreadsheet_prettifying_requests(timetable):
                             'horizontalAlignment': 'CENTER',
                             'verticalAlignment': 'MIDDLE',
                             'wrapStrategy': 'WRAP',
+                            'textFormat': {
+                                'fontSize': 10,
+                                'bold': False,
+                                'fontFamily': 'Merriweather',
+                            },
                         },
                     },
-                    'fields': '''userEnteredFormat(\
-                                    horizontalAlignment,\
-                                    verticalAlignment,\
-                                    wrapStrategy,\
+                    'fields': '''userEnteredFormat(
+                                    horizontalAlignment,
+                                    verticalAlignment,
+                                    wrapStrategy,
+                                    textFormat,
                                     )''',
                 },
             },
@@ -219,8 +225,8 @@ def _google_spreadsheet_prettifying_requests(timetable):
                             },
                         },
                     },
-                    'fields': '''userEnteredFormat.textFormat(\
-                                    foregroundColor,\
+                    'fields': '''userEnteredFormat.textFormat(
+                                    foregroundColor,
                                     bold)''',
                 },
             },
