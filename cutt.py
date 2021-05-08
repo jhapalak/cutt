@@ -17,7 +17,6 @@ import csv
 import pickle
 import time
 import argparse
-from textwrap import dedent as d
 from os import path
 
 
@@ -45,8 +44,6 @@ def _raw_data_split(raw_data):
     return raw_timetable, raw_courseinfo
 
 
-_BREAK_PERIOD = ''
-
 def _timetable_processed(raw_tt, courseinfo):
 
     def fmt_duration(d):
@@ -61,7 +58,7 @@ def _timetable_processed(raw_tt, courseinfo):
         return w.strip().title()
 
     def fmt_courseinfo(c):
-        if c == _BREAK_PERIOD:
+        if c == '':
             return '---'
         code = c[:c.find(':')]
         return courseinfo[code]
@@ -108,7 +105,7 @@ _GOOGLE_API_SCOPES = [
     'https://www.googleapis.com/auth/spreadsheets',
 ]
 
-# Taken from https://developers.google.com/sheets/api/quickstart/python
+# Based on sample code at: https://developers.google.com/sheets/api/quickstart/python
 def _google_service(token_filepath, credentials_filepath):
     from googleapiclient.discovery import build
     from google_auth_oauthlib.flow import InstalledAppFlow
@@ -262,13 +259,13 @@ def _default_title(fmt=_DEFAULT_TITLE_FORMAT):
     return fmt.format(timestamp=timestamp)
 
 
-_COMMON_OPTION_HELP_TIMETABLE = d('''\
-    Path to .csv file containing the timetable (required).
-    You can download it from CUIMS (university's website).''')
-_COMMON_OPTION_HELP_COURSEINFO = d('''\
-    Path to .json file containing course information.
-    If not specified, "{}" is assumed.''')\
-    .format(_DEFAULT_FILEPATH_COURSEINFO)
+_COMMON_OPTION_HELP_TIMETABLE = (
+    "Path to .csv file containing the timetable (required). "
+    "You can download it from CUIMS (university's website).")
+_COMMON_OPTION_HELP_COURSEINFO = (
+    "Path to .json file containing course information. "
+    "If not specified, '{}' is assumed."
+    .format(_DEFAULT_FILEPATH_COURSEINFO))
 
 
 def _set_subparser_args_handler(subparser, handler):
@@ -299,8 +296,7 @@ def cmd_gsheet(timetable_filepath,
 def _add_parser_cmd_gsheet(subparsers):
     parser = subparsers.add_parser(
         'gsheet',
-        formatter_class=argparse.RawTextHelpFormatter,
-        help='Create a Google Sheet')
+        help="Create a Google Sheet")
 
     parser.add_argument(
         'timetable',
@@ -310,29 +306,25 @@ def _add_parser_cmd_gsheet(subparsers):
         help=_COMMON_OPTION_HELP_COURSEINFO)
     parser.add_argument(
         '-t', '--title',
-        help=d('''\
-            Title for the Google Sheet.
-            If not specified, a timestamped default is used.
-            Default title format: "{}".''')
+        help="Title for the Google Sheet. "
+             "If not specified, a timestamped default is used. "
+             "Default title format: '{}'."
             .format(_DEFAULT_TITLE_FORMAT))
     parser.add_argument(
         '-p', '--plain',
         action='store_true',
-        help=d('''\
-            Write only plain text to Google Sheet.
-            Don't prettify.'''))
+        help="Write only plain text to the Google Sheet. "
+             "Don't prettify.")
     parser.add_argument(
         '--token',
-        help=d('''\
-            Path to .pickle file containing the Google API token.
-            If not specified, "{}" is assumed.''')
-            .format(_DEFAULT_FILEPATH_TOKEN))
+        help="Path to .pickle file containing the Google API token. "
+             "If not specified, '{}' is assumed."
+             .format(_DEFAULT_FILEPATH_TOKEN))
     parser.add_argument(
         '--credentials',
-        help=d('''\
-            Path to .json file containing the Google API credentials.
-            If not specified, "{}" is assumed.''')
-            .format(_DEFAULT_FILEPATH_CREDENTIALS))
+        help="Path to .json file containing the Google API credentials. "
+             "If not specified, '{}' is assumed."
+             .format(_DEFAULT_FILEPATH_CREDENTIALS))
 
     def args_handler(args):
         cmd_gsheet(
@@ -370,18 +362,16 @@ def _csv_create_file(destination_filepath, rows):
 def _add_parser_cmd_csv(subparsers):
     parser = subparsers.add_parser(
         'csv',
-        formatter_class=argparse.RawTextHelpFormatter,
-        help='Output a CSV file')
+        help="Output a CSV file")
 
     parser.add_argument(
         'timetable',
         help=_COMMON_OPTION_HELP_TIMETABLE)
     parser.add_argument(
         '-o', '--output',
-        help=d('''\
-            Place output into this file.
-            If not specified, "{}" is assumed.''')
-            .format(_DEFAULT_FILEPATH_OUTPUT_CSV))
+        help="Place output into this file. "
+             "If not specified, '{}' is assumed."
+             .format(_DEFAULT_FILEPATH_OUTPUT_CSV))
     parser.add_argument(
         '-c', '--courseinfo',
         help=_COMMON_OPTION_HELP_COURSEINFO)
@@ -417,11 +407,12 @@ def _courseinfo_from_file(timetable_filepath):
 
 
 def _courseinfo_interactive_edit(courseinfo):
-    print(d('''\
-        Enter alternative names for courses as prompted.
-        If no alternative name is given, the default name is kept.
-        Recommendation: Keep names shorter than 11 characters.
-        '''))
+    print('''
+Enter alternative names for courses as prompted.
+If no alternative name is given, the default name is kept.
+Recommendation: Keep names shorter than 11 characters.
+
+''')
     items = sorted(courseinfo.items(), key=lambda x: x[1])
     for k, v in items:
         newname = input(f'Alternative name for "{v}" = ').strip()
@@ -439,22 +430,20 @@ def _add_parser_cmd_courseinfo(subparsers):
     parser = subparsers.add_parser(
         'courseinfo',
         aliases=['ci'],
-        formatter_class=argparse.RawTextHelpFormatter,
-        help='Generate course-related information (required).')
+        help="Generate course-related information (required).")
 
     parser.add_argument(
         'timetable',
         help=_COMMON_OPTION_HELP_TIMETABLE)
     parser.add_argument(
         '-o', '--output',
-        help=d('''\
-            Place output into this file.
-            If not specified, "{}" is assumed.''')
-            .format(_DEFAULT_FILEPATH_COURSEINFO))
+        help="Place output into this file. "
+             "If not specified, '{}' is assumed."
+             .format(_DEFAULT_FILEPATH_COURSEINFO))
     parser.add_argument(
         '-i', '--interactive',
         action='store_true',
-        help='Interactively create the file.')
+        help="Interactively enter course names.")
 
     def args_handler(args):
         cmd_courseinfo(
@@ -467,9 +456,7 @@ def _add_parser_cmd_courseinfo(subparsers):
 
 
 def cutt(args=None):
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
+    parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(title='Subcommands')
 
     _add_parser_cmd_courseinfo(subparsers)
