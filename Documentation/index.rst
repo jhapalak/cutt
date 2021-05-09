@@ -7,3 +7,4 @@ Documentation for CU-Timetable (``cutt``)
 	:caption: Contents:
 
 	tutorial.rst
+	api-reference.rst
