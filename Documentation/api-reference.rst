@@ -3,7 +3,7 @@ API Reference
 =============
 
 Like all good command line scripts, ``cutt`` also exposes an API for
-programmatic access. The functions constituting this API are mostly
+programmatic access. The functions forming this API are mostly
 similar to their command line counterparts. Slight differences exist,
 however,  since the command line interface doesn't always make sense
 as an API, nor is it always as testable.
@@ -59,11 +59,8 @@ The Functions
 
 	*fileorpath_timetable:* :ref:`Description below. <common-arg-timetable>`
 
-	*fileorpath_courseinfo:* :ref:`Description below. <common-arg-courseinfo>`
-
-	*interactive:* If ``True``, the user is prompted to enter alternative
-	course names. If ``False``, the default/long course names from
-	``fileorpath_timetable`` are used. Defaults to ``False``.
+	*fileorpath_output:* The file to write the course-related information to.
+	Defaults to ``None`` in which case, a default file path is used.
 
 	*interactive:* A boolean denoting whether or not to prompt the user to
 	enter alternate coursenames. Defaults to ``False``, in which case the
