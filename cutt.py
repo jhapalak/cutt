@@ -266,12 +266,14 @@ def _default_title(fmt=_DEFAULT_TITLE_FORMAT):
 
 
 _COMMON_OPTION_HELP_TIMETABLE = (
-    "Path to .csv file containing the timetable (required). "
-    "You can download it from CUIMS (university's website).")
+    "Path to .csv file containing the timetable (required). You can download "
+    "it from CUIMS (university's website)."
+)
 _COMMON_OPTION_HELP_COURSEINFO = (
-    "Path to .json file containing course information. "
-    "If not specified, '{}' is assumed."
-    .format(_DEFAULT_FILEPATH_COURSEINFO))
+    "Path to .json file containing course information. If not specified, "
+    "'{}' is assumed."
+    .format(_DEFAULT_FILEPATH_COURSEINFO)
+)
 
 
 def _set_subparser_args_handler(subparser, handler):
@@ -302,35 +304,40 @@ def cmd_gsheet(timetable_filepath,
 def _add_parser_cmd_gsheet(subparsers):
     parser = subparsers.add_parser(
         'gsheet',
-        help="Create a Google Sheet")
+        help="Create a Google Sheet"
+    )
 
     parser.add_argument(
         'timetable',
-        help=_COMMON_OPTION_HELP_TIMETABLE)
+        help=_COMMON_OPTION_HELP_TIMETABLE
+    )
     parser.add_argument(
         '-c', '--courseinfo',
-        help=_COMMON_OPTION_HELP_COURSEINFO)
+        help=_COMMON_OPTION_HELP_COURSEINFO
+    )
     parser.add_argument(
         '-t', '--title',
-        help="Title for the Google Sheet. "
-             "If not specified, a timestamped default is used. "
-             "Default title format: '{}'."
-            .format(_DEFAULT_TITLE_FORMAT))
+        help="Title for the Google Sheet. If not specified, a timestamped "
+            "default is used. Default title format: '{}'."
+            .format(_DEFAULT_TITLE_FORMAT)
+    )
     parser.add_argument(
         '-p', '--plain',
         action='store_true',
-        help="Write only plain text to the Google Sheet. "
-             "Don't prettify.")
+        help="Write only plain text to the Google Sheet. Don't prettify."
+    )
     parser.add_argument(
         '--token',
-        help="Path to .pickle file containing the Google API token. "
-             "If not specified, '{}' is assumed."
-             .format(_DEFAULT_FILEPATH_TOKEN))
+        help="Path to .pickle file containing the Google API token. If not "
+            "specified, '{}' is assumed."
+            .format(_DEFAULT_FILEPATH_TOKEN)
+    )
     parser.add_argument(
         '--credentials',
-        help="Path to .json file containing the Google API credentials. "
-             "If not specified, '{}' is assumed."
-             .format(_DEFAULT_FILEPATH_CREDENTIALS))
+        help="Path to .json file containing the Google API credentials. If "
+            "not specified, '{}' is assumed."
+            .format(_DEFAULT_FILEPATH_CREDENTIALS)
+    )
 
     def args_handler(args):
         cmd_gsheet(
@@ -368,19 +375,22 @@ def _csv_create_file(destination_filepath, rows):
 def _add_parser_cmd_csv(subparsers):
     parser = subparsers.add_parser(
         'csv',
-        help="Output a CSV file")
+        help="Output a CSV file"
+    )
 
     parser.add_argument(
         'timetable',
-        help=_COMMON_OPTION_HELP_TIMETABLE)
+        help=_COMMON_OPTION_HELP_TIMETABLE
+    )
     parser.add_argument(
         '-o', '--output',
-        help="Place output into this file. "
-             "If not specified, '{}' is assumed."
-             .format(_DEFAULT_FILEPATH_OUTPUT_CSV))
+        help="Place output into this file. If not specified, '{}' is assumed."
+            .format(_DEFAULT_FILEPATH_OUTPUT_CSV)
+    )
     parser.add_argument(
         '-c', '--courseinfo',
-        help=_COMMON_OPTION_HELP_COURSEINFO)
+        help=_COMMON_OPTION_HELP_COURSEINFO
+    )
 
     def args_handler(args):
         cmd_csv(
@@ -413,12 +423,12 @@ def _courseinfo_from_file(timetable_filepath):
 
 
 def _courseinfo_interactive_edit(courseinfo):
-    print('''
-Enter alternative names for courses as prompted.
-If no alternative name is given, the default name is kept.
-Recommendation: Keep names shorter than 11 characters.
+    print(
+        "Enter alternative names for courses as prompted.\n"
+        "If no alternative name is given, the default name is kept.\n"
+        "Recommendation: Keep names shorter than 11 characters.\n\n"
+    )
 
-''')
     items = sorted(courseinfo.items(), key=lambda x: x[1])
     for k, v in items:
         newname = input(f'Alternative name for "{v}" = ').strip()
@@ -436,20 +446,23 @@ def _add_parser_cmd_courseinfo(subparsers):
     parser = subparsers.add_parser(
         'courseinfo',
         aliases=['ci'],
-        help="Generate course-related information (required).")
+        help="Generate course-related information (required)."
+    )
 
     parser.add_argument(
         'timetable',
-        help=_COMMON_OPTION_HELP_TIMETABLE)
+        help=_COMMON_OPTION_HELP_TIMETABLE
+    )
     parser.add_argument(
         '-o', '--output',
-        help="Place output into this file. "
-             "If not specified, '{}' is assumed."
-             .format(_DEFAULT_FILEPATH_COURSEINFO))
+        help="Place output into this file. If not specified, '{}' is assumed."
+            .format(_DEFAULT_FILEPATH_COURSEINFO)
+    )
     parser.add_argument(
         '-i', '--interactive',
         action='store_true',
-        help="Interactively enter course names.")
+        help="Interactively enter course names."
+    )
 
     def args_handler(args):
         cmd_courseinfo(
