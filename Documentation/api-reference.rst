@@ -97,8 +97,7 @@ The Functions
 	*fileorpath_credentials:* The Google API token. Can be a text stream opened for
 	reading, or a file path.
 
-	*title:* A string; title of the Google Sheet. Defaults to a timestamped title
-	of the form ``cutt-<timestamp>``.
+	*title:* A string; title of the Google Sheet. Defaults to ``"cutt"``.
 
 	*plain:* A boolean denoting whether or not to create an unformatted Google Sheet.
 	Defaults to ``False``, i.e., the sheets are formatted by default.

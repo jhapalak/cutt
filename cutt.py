@@ -257,13 +257,7 @@ _DEFAULT_FILEPATH_TOKEN = 'token.pickle'
 _DEFAULT_FILEPATH_CREDENTIALS = 'credentials.json'
 _DEFAULT_FILEPATH_OUTPUT_CSV = 'a.csv'
 
-
-_DEFAULT_TITLE_FORMAT = 'cutt-{timestamp}'
-
-def _default_title(fmt=_DEFAULT_TITLE_FORMAT):
-    timestamp = time.strftime('%d%b%Y-%I%M%p')
-    return fmt.format(timestamp=timestamp)
-
+_DEFAULT_GSHEET_TITLE = 'cutt'
 
 _COMMON_OPTION_HELP_TIMETABLE = (
     "Path to .csv file containing the timetable (required). You can download "
@@ -295,7 +289,7 @@ def cmd_gsheet(timetable_filepath,
         token_filepath or _DEFAULT_FILEPATH_TOKEN,
         credentials_filepath or _DEFAULT_FILEPATH_CREDENTIALS,
         tt,
-        title or _default_title(),
+        title or _DEFAULT_GSHEET_TITLE,
         not plain,
     )
     return spreadsheet_id
@@ -317,9 +311,8 @@ def _add_parser_cmd_gsheet(subparsers):
     )
     parser.add_argument(
         '-t', '--title',
-        help="Title for the Google Sheet. If not specified, a timestamped "
-            "default is used. Default title format: '{}'."
-            .format(_DEFAULT_TITLE_FORMAT)
+        help="Title for the Google Sheet. If not specified, '{}' is used."
+            .format(_DEFAULT_GSHEET_TITLE)
     )
     parser.add_argument(
         '-p', '--plain',
