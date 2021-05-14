@@ -255,7 +255,7 @@ def _google_spreadsheet_prettifying_requests(timetable):
 _DEFAULT_FILEPATH_COURSEINFO = 'courseinfo.json'
 _DEFAULT_FILEPATH_TOKEN = 'token.pickle'
 _DEFAULT_FILEPATH_CREDENTIALS = 'credentials.json'
-_DEFAULT_FILEPATH_OUTPUT_CSV = 'a.csv'
+_DEFAULT_FILEPATH_OUTPUT_CSV = 'cutt.csv'
 
 _DEFAULT_GSHEET_TITLE = 'cutt'
 
