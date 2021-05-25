@@ -1,46 +1,124 @@
-#
-# A quick sanity check for cutt.timetable(). Not even close to
-# sufficient, and quite brittle too, but will do for now.
-#
-
 import unittest
-from cutt import timetable
+import io
+import csv
+
+import cutt
 
 
-raw_timetable_1 = [
-    ['foo', 'foo', 'foo'],
-    ['00:00 - 00:00 bar', 'Day0', 'code0:T:: Gp-X:foobarspam'],
-    ['00:00 - 00:00 bar', 'Day1', 'code2:T:: Gp-X:foobarspam'],
-    ['11:11 - 11:11 bar', 'Day0', ''],
-    ['11:11 - 11:11 bar', 'Day1', ''],
-    ['22:22 - 22:22 bar', 'Day0', 'code1:T:: Gp-X:foobarspam'],
-    ['22:22 - 22:22 bar', 'Day1', 'code0:T:: Gp-X:foobarspam'],
-    [],
-    ['spam', 'spam'],
-    ['code0', 'course0'],
-    ['code1', 'course1'],
-    ['code2', 'course2'],
-]
-courseinfo_json_1 = {
-        'code0': 'course0',
-        'code1': 'course1',
-        'code2': 'course2',
-}
-expected_processed_timetable_1 = [
-    ['Timings',     'Day0',     'Day1'],
-    ['00:00-00:00', 'course0',  'course2'],
-    ['11:11-11:11', '---',      '---'],
-    ['22:22-22:22', 'course1',  'course0'],
-]
+def the_test_data():
+    TIMINGS = 'Timings'
+    BREAK = '---'
+    the_data = {
+        (2, 2, 0): (
+            [
+                ['TimingId', 'DayNo', 'CourseCode'],
+                ['a0:a0 - a0:a0 A0', 'Aaa', '00AAA-000:'],
+                [],
+                ['CourseCode1', 'Title'],
+                ['00AAA-000', 'a0a0'],
+                []
+            ],
+            {
+                '00AAA-000': '*a0a0*'
+            },
+            [
+                [TIMINGS, 'Aaa'],
+                ['a0:a0-a0:a0', 'a0a0']
+            ],
+            [
+                [TIMINGS, 'Aaa'],
+                ['a0:a0-a0:a0', '*a0a0*']
+            ]
+        ),
+        (2, 2, 1): (
+            [
+                ['TimingId', 'DayNo', 'CourseCode'],
+                ['a0:a0 - a0:a0 A0', 'Aaa', ''],
+                [],
+                ['CourseCode1', 'Title'],
+                ['00AAA-000', 'a0a0'],
+                []
+            ],
+            {
+                '00AAA-000': '*a0a0*'
+            },
+            [
+                [TIMINGS, 'Aaa'],
+                ['a0:a0-a0:a0', BREAK]
+            ],
+            [
+                [TIMINGS, 'Aaa'],
+                ['a0:a0-a0:a0', BREAK]
+            ]
+        ),
+        (2, 3, 0): (
+            [],
+            {},
+            [],
+            []
+        ),
+        (3, 2, 0): (
+            [],
+            {},
+            [],
+            []
+        ),
+        (3, 3, 0): (
+            [],
+            {},
+            [],
+            []
+        ),
+    }
+    return the_data.items()
 
 
 class TimetableTestCase(unittest.TestCase):
+    def test_coursetable_extraction(self):
+        for id, (rawdata, _, timetable, _) in the_test_data():
+            with self.subTest(id=id):
+                self.assertEqual(cutt.timetable(rawdata), timetable)
 
-    def test_timetable_sanity(self):
-        self.assertEqual(
-            timetable(raw_timetable_1, courseinfo_json_1),
-            expected_processed_timetable_1
-        )
+    def test_given_coursetable_usage(self):
+        for id, (rawdata, coursetable, _, custom_timetable) in the_test_data():
+            with self.subTest(id=id):
+                self.assertEqual(cutt.timetable(rawdata, coursetable),
+                                 custom_timetable)
+
+
+class CoursetableTestCase(unittest.TestCase):
+    def test(self):
+        for id, (rawdata, coursetable, _, _) in the_test_data():
+            with self.subTest(id=id):
+                self.assertEqual(cutt.coursetable(rawdata), coursetable)
+
+
+class CsvTestCase(unittest.TestCase):
+    def matrix_to_csv(self, timetable):
+        sio = io.StringIO()
+        csv.writer(sio).writerows(timetable)
+        return sio.getvalue()
+
+    def do_assert(self, timetable):
+        sio = io.StringIO()
+        cutt.csv(timetable, sio)
+        output = sio.getvalue()
+        expected = self.matrix_to_csv(timetable)
+        self.assertEqual(output, expected)
+
+    def test_with_default_timetable(self):
+        for id, (_, _, timetable, _) in the_test_data():
+            with self.subTest(id=id):
+                self.do_assert(timetable)
+
+    def test_with_custom_timetable(self):
+        for id, (_, _, _, custom_timetable) in the_test_data():
+            with self.subTest(id=id):
+                self.do_assert(custom_timetable)
+
+
+class GsheetTestCase(unittest.TestCase):
+    pass
 
 
 if __name__ == '__main__':
