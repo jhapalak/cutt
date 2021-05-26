@@ -52,22 +52,54 @@ def the_test_data():
             ]
         ),
         (2, 3, 0): (
-            [],
-            {},
-            [],
-            []
+            [
+                ['TimingId', 'DayNo', 'CourseCode'],
+                ['a0:a0 - a0:a0 A0', 'Aaa', '00AAA-000:'],
+                ['a0:a0 - a0:a0 A0', 'Bbb', '00BBB-000:'],
+                [],
+                ['CourseCode1', 'Title'],
+                ['00AAA-000', 'a0a0'],
+                ['00BBB-000', 'b0b0'],
+                []
+            ],
+            {
+                '00AAA-000': '*a0a0*',
+                '00BBB-000': '*b0b0*'
+            },
+            [
+                [TIMINGS, 'Aaa', 'Bbb'],
+                ['a0:a0-a0:a0', 'a0a0', 'b0b0']
+            ],
+            [
+                [TIMINGS, 'Aaa'],
+                ['a0:a0-a0:a0', '*a0a0*', '*b0b0*']
+            ]
         ),
         (3, 2, 0): (
-            [],
-            {},
-            [],
-            []
-        ),
-        (3, 3, 0): (
-            [],
-            {},
-            [],
-            []
+            [
+                ['TimingId', 'DayNo', 'CourseCode'],
+                ['a0:a0 - a0:a0 A0', 'Aaa', '00AAA-000:'],
+                ['a1:a1 - a1:a1 A1', 'Aaa', '11AAA-111:']
+                [],
+                ['CourseCode1', 'Title'],
+                ['00AAA-000', 'a0a0'],
+                ['11AAA-111', 'a1a1'],
+                []
+            ],
+            {
+                '00AAA-000': '*a0a0*',
+                '11AAA-111': '*a1a1*'
+            },
+            [
+                [TIMINGS, 'Aaa'],
+                ['a0:a0-a0:a0', 'a0a0'],
+                ['a1:a1-a1:a1', 'a1a1']
+            ],
+            [
+                [TIMINGS, 'Aaa'],
+                ['a0:a0-a0:a0', '*a0a0*']
+                ['a1:a1-a1:a1', '*a1a1*'],
+            ]
         ),
     }
     return the_data.items()
@@ -85,6 +117,41 @@ class TimetableTestCase(unittest.TestCase):
                 self.assertEqual(cutt.timetable(rawdata, coursetable),
                                  custom_timetable)
 
+    def test_multiple_vacant_periods_in_a_day(self):
+        rawdata = [
+            ['TimingId', 'DayNo', 'CourseCode'],
+            ['a0:a0 - a0:a0 A0', 'Aaa', ''],
+            ['a1:a1 - a1:a1 A1', 'Aaa', '']
+            [],
+            ['CourseCode1', 'Title'],
+            ['00AAA-000', 'a0a0'],
+            ['11AAA-111', 'a1a1'],
+            []
+        ]
+        expected = [
+            [TIMINGS, 'Aaa'],
+            ['a0:a0-a0:a0', BREAK],
+            ['a1:a1-a1:a1', BREAK]
+        ]
+        output = cutt.timetable(rawdata)
+        self.assertEqual(output, expected)
+
+    def test_timings_zero_fill(self):
+        rawdata = [
+            ['TimingId', 'DayNo', 'CourseCode'],
+            ['0:0 - 0:0 A0', 'Aaa', '00AAA-000:'],
+            [],
+            ['CourseCode1', 'Title'],
+            ['00AAA-000', 'a0a0'],
+            []
+        ]
+        expected = [
+            [TIMINGS, 'Aaa'],
+            ['00:00-00:00', 'a0a0']
+        ]
+        output = cutt.timetable(rawdata)
+        self.assertEqual(output, expected)
+
 
 class CoursetableTestCase(unittest.TestCase):
     def test(self):
@@ -99,7 +166,7 @@ class CsvTestCase(unittest.TestCase):
         csv.writer(sio).writerows(timetable)
         return sio.getvalue()
 
-    def do_assert(self, timetable):
+    def assertCorrectCsvGenerated(self, timetable):
         sio = io.StringIO()
         cutt.csv(timetable, sio)
         output = sio.getvalue()
@@ -109,14 +176,15 @@ class CsvTestCase(unittest.TestCase):
     def test_with_default_timetable(self):
         for id, (_, _, timetable, _) in the_test_data():
             with self.subTest(id=id):
-                self.do_assert(timetable)
+                self.assertCorrectCsvGenerated(timetable)
 
     def test_with_custom_timetable(self):
         for id, (_, _, _, custom_timetable) in the_test_data():
             with self.subTest(id=id):
-                self.do_assert(custom_timetable)
+                self.assertCorrectCsvGenerated(custom_timetable)
 
 
+@unittest.skip('TODO')
 class GsheetTestCase(unittest.TestCase):
     pass
 
